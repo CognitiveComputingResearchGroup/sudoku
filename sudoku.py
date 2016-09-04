@@ -1,3 +1,4 @@
+# Unsolved cells are represented by 0
 puzzle = [[ 0, 0, 2,  0, 0, 7,  0, 0, 9 ],
           [ 0, 8, 0,  0, 2, 0,  0, 5, 0 ],
           [ 7, 0, 0,  1, 0, 0,  4, 0, 0 ],
@@ -12,20 +13,32 @@ puzzle = [[ 0, 0, 2,  0, 0, 7,  0, 0, 9 ],
 
    
 def load_puzzle(path):
-    """load_puzzle(path): Loads puzzle from file path"""
+    """load_puzzle(path): Return puzzle from file path.
+        path should be text, 9 lines long, with nine 
+        unique digits on each line."""
+
+    # TODO: try/except, validate_puzzle() before returning
+
     puzzle = list()
-    # Format of puzzle encoding will be as example above
+    # Encoding of returned puzzle will be as in example above
     with open(path) as f:
         lines = f.readlines()
         for row, line in enumerate(lines):
             puzzle.append([int(s) for s in list(line.strip())])
     return puzzle
 
+
 def get_row_sets(puzzle):
+    """ get_row_sets(puzzle): Return a list of sets indexed by row number.
+        Sets contain already solved numbers in a row."""
+
     return [set(row) - {0} for row in puzzle]
 
 
 def get_col_sets(puzzle):
+    """ get_col_sets(puzzle): Return a list of sets indexed by col number.
+        Sets contain already solved numbers in a column."""
+
     return [ set([ row[i] for row in puzzle ]) - {0} for i in range(9) ]
 
 
@@ -35,11 +48,17 @@ row_boxes = lambda row: [3 * int(row/3) + i for i in range(3) ]
 #   row = 3, 4, or 5 --> boxes 3, 4, and 5 for cols in row_slices
 #   row = 6, 7, or 8 --> boxes 6, 7, and 8 for cols in row_slices
 
+
 def get_box_sets(puzzle):
-    box_sets = dict()
+    """ get_box_sets(puzzle): Return a list of sets indexed by box number.
+        Sets contain already solved numbers in a box."""
+
+    box_sets = dict() # dict needed for updating; convert to list afterwards
     for row_num, row in enumerate(puzzle):
         boxes = row_boxes(row_num)
         for box, row_slice in zip(boxes, row_slices):
+        # Iterate over the appropriate boxes and slices for this row,
+        # updating sets with as needed with already solved numbers
             update = set(row[slice(*row_slice)])
             if box in box_sets:
                 box_sets[box].update(update) # set.update(), not dict.update()
@@ -53,7 +72,6 @@ def get_box_sets(puzzle):
     
     return result
  
-
 
 def calculate_possibles(puzzle):
     #   Produce 3 sets from solved cells, 1 each for rows, columns, and boxes
@@ -107,13 +125,17 @@ def calculate_possibles(puzzle):
     return possibles
 
 
-def scan_possibles(puzzle, possibles):
+def reduce_singletons(puzzle, possibles):
+    """reduce_singletons(puzzle, possibles): Return puzzle updated
+        with singletons in possibles that are new to the puzzle."""
+
     result = list() 
     for row_num in range(9):
         result.append(list(puzzle[row_num]))
         for col_num in range(9):
             cell_poss = possibles[row_num][col_num].copy()
-            if len(cell_poss) is 1:
+            if len(cell_poss) is 1 and result[row_num][col_num] is 0:
+            # Add singleton to result if not already solved
                 result[row_num][col_num] = cell_poss.pop()
     return result
 
@@ -126,16 +148,20 @@ def different_puzzles(puzzle1, puzzle2):
     return False
 
 
-def update_puzzle(func, puzzle, possibles):
-    pass
+def update_puzzle(strategy, puzzle, possibles):
+    return strategy(puzzle, possibles)
     
 
 #path = '/home/stephen/PythonStuff/sudoku/2016_09_03_Sudoku_Evil.txt'
 path = '/home/stephen/PythonStuff/sudoku/2016_09_04_Sudoku_Evil.txt'
 puzzle = load_puzzle(path) 
 possibles = calculate_possibles(puzzle)
-updated = scan_possibles(puzzle, possibles)
+#updated = reduce_singletons(puzzle, possibles)
+updated = puzzle
+strategies = [reduce_singletons]
 while different_puzzles(puzzle, updated):
     puzzle = updated
     possibles = calculate_possibles(puzzle)
-    updated = scan_possibles(puzzle, possibles)
+    #updated = reduce_singletons(puzzle, possibles)
+    for strategy in strategies:
+        updated = update_puzzle(strategy, puzzle, possibilities)
