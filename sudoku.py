@@ -55,7 +55,7 @@ def load_puzzle(path):
 
 
 def copy_puzzle(puzzle):
-    """ copy_puzzle(puzzle): Return shallow copy of puzzle
+    """ copy_puzzle(puzzle): Return deep copy of puzzle
         to avoid side effects in function calls."""
 
     result = list()
@@ -161,7 +161,8 @@ def reduce_singletons(puzzle, possibles):
 
 def unique_in_row(puzzle, possibles):
     """ unique_on_row(puzzle, possibles): Return puzzle updated
-        with solutions for cells with values unique to a row."""
+        with solutions for cells with possible values unique 
+        to a row."""
 
     result = copy_puzzle(puzzle)
     for i in range(9):
@@ -190,13 +191,50 @@ def unique_in_col(puzzle, possibles):
     return result
 
 
+def unique_in_cells(cells, puzzle, possibles):
+    """ unique_in_cells(cells, puzzle, possibles):
+        Find unique values in a group of cells
+        (row, column, or box). Returns a dictionary
+        with the unique value(s), keyed on the cell(s) 
+        to be solved."""
+
+    if len(cells) < 9:
+        return dict()
+
+    def _copy_cell_sets():
+        copy = dict()
+        for cell in cell_sets:
+            copy[cell] = cell_sets[cell].copy()
+        return copy
+
+    cell_sets = dict()
+    for cell in cells:
+        row, col = cell
+        if puzzle[row][col]:
+            continue
+        cell_sets[cell] = possibles[row][col].copy()
+    unique = dict()
+    for cell in cell_sets:
+        cs_copy = _copy_cell_sets()
+        cell_set = cs_copy.pop(cell)
+        for k in cs_copy:
+            cell_set = cell_set - cs_copy[k]
+            if not len(cell_set):
+                break
+        if len(cell_set):
+            unique[cell] = cell_set.pop()
+            # TODO: If cell_set is not now empty, 
+            #       throw an exception
+    return unique
+
+
 def update_puzzle(strategy, puzzle, possibles):
     return strategy(puzzle, possibles)
     
 
 #path = '/home/stephen/PythonStuff/sudoku/2016_09_03_Sudoku_Evil.txt'
-#path = '/home/stephen/PythonStuff/sudoku/2016_09_04_Sudoku_Evil.txt'
-path = '/home/stephen/PythonStuff/sudoku/2016_09_04_Websudoku_Easy.txt'
+path = '/home/stephen/PythonStuff/sudoku/2016_09_04_Sudoku_Evil.txt'
+#path = '/home/stephen/PythonStuff/sudoku/2016_09_04_Websudoku_Easy.txt'
 puzzle = load_puzzle(path) 
 possibles = calculate_possibles(puzzle)
 strategies = [reduce_singletons, unique_in_col]
