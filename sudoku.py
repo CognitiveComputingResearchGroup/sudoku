@@ -70,14 +70,15 @@ def update_puzzle(strategy, puzzle, possibles):
     
 
 #path = '/home/stephen/PythonStuff/sudoku_git/2016_09_03_Sudoku_Evil.txt'
-#path = '/home/stephen/PythonStuff/sudoku_git/2016_09_04_Sudoku_Evil.txt'
+path = '/home/stephen/PythonStuff/sudoku_git/2016_09_04_Sudoku_Evil.txt'
 #path = '/home/stephen/PythonStuff/sudoku_git/2016_09_04_Websudoku_Easy.txt'
 #path = '/home/stephen/PythonStuff/sudoku_git/2016_09_05_Websudoku_Medium.txt'
 #path = '/home/stephen/PythonStuff/sudoku_git/2016_09_05_Websudoku_Medium_2.txt'
-path = '/home/stephen/PythonStuff/sudoku_git/2016_09_05_Websudoku_Hard.txt'
+#path = '/home/stephen/PythonStuff/sudoku_git/2016_09_05_Websudoku_Hard.txt'
 puzzle = load_puzzle(path) 
 possibles = calculate_possibles(puzzle)
-strategies = [strat.reduce_singletons, strat.unique_in_col, strat.unique_in_row]
+strategies = [strat.reduce_singletons, strat.unique_in_row,
+              strat.unique_in_col, strat.unique_in_box]
 previous, updated = list(), list()
 while su.different_puzzles(puzzle, previous):
     previous = su.copy_puzzle(puzzle)

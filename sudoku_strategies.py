@@ -1,4 +1,4 @@
-from collections import defaultdict
+#from collections import defaultdict
 import sudoku_utils as su
 
 def reduce_singletons(puzzle, possibles):
@@ -32,34 +32,42 @@ def unique_in_row(puzzle, possibles):
     return result
 
 def unique_in_col(puzzle, possibles):
-    """ unique_on_row(puzzle, possibles): Return puzzle updated
-        with solutions for cells with values unique to a column."""
+    """ unique_in_col(puzzle, possibles): Return puzzle updated
+        with solutions for cells with possible values unique
+        to a column."""
 
     result = su.copy_puzzle(puzzle)
-    for col in range(9):
-        counts = defaultdict(int)
-        for row in range(9):
-            if not puzzle[row][col]: # If this is an unsolved cell...
-                cell_poss = list(possibles[row][col])
-                while len(cell_poss):
-                    counts[cell_poss.pop()] += 1
-        singletons = [ counts[k] is 1 for k in counts ]
-        if any(singletons):
-            for k in counts:
-                if counts[k] is 1:
-                    for row in range(9):
-                        if not puzzle[row][col]   \
-                        and k in possibles[row][col]:
-                            result[row][col] = k
+    for i in range(9):
+        cells = su.col_cells(i)
+        uniques = unique_in_cells(cells, puzzle, possibles)
+        if uniques:
+            for cell in uniques:
+                row, col = cell
+                result[row][col] = uniques[cell]
+    return result
+
+
+def unique_in_box(puzzle, possibles):
+    """ unique_in_box(puzzle, possibles): Return puzzle updated
+        with solutions for cells with possible values unique
+        to a column."""
+
+    result = su.copy_puzzle(puzzle)
+    for i in range(9):
+        cells = su.box_cells(i)
+        uniques = unique_in_cells(cells, puzzle, possibles)
+        if uniques:
+            for cell in uniques:
+                row, col = cell
+                result[row][col] = uniques[cell]
     return result
 
 
 def unique_in_cells(cells, puzzle, possibles):
     """ unique_in_cells(cells, puzzle, possibles):
-        Find unique values in a group of cells
-        (row, column, or box). Returns a dictionary
-        with the unique value(s), keyed on the cell(s) 
-        to be solved."""
+        Find unique values in a group of cells.
+        Returns a dictionary with the unique
+        value(s), keyed on the cell(s) to be solved."""
 
     if len(cells) < 2:
         return dict()
