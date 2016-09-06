@@ -77,7 +77,7 @@ def update_puzzle(strategy, puzzle, possibles):
 path = '/home/stephen/PythonStuff/sudoku_git/2016_09_05_Websudoku_Hard.txt'
 puzzle = load_puzzle(path) 
 possibles = calculate_possibles(puzzle)
-strategies = [strat.reduce_singletons, strat.unique_in_col]
+strategies = [strat.reduce_singletons, strat.unique_in_col, strat.unique_in_row]
 previous, updated = list(), list()
 while su.different_puzzles(puzzle, previous):
     previous = su.copy_puzzle(puzzle)

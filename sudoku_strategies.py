@@ -23,7 +23,13 @@ def unique_in_row(puzzle, possibles):
 
     result = su.copy_puzzle(puzzle)
     for i in range(9):
-        pass        
+        cells = su.row_cells(i)
+        uniques = unique_in_cells(cells, puzzle, possibles)
+        if uniques:
+            for cell in uniques:
+                row, col = cell
+                result[row][col] = uniques[cell]
+    return result
 
 def unique_in_col(puzzle, possibles):
     """ unique_on_row(puzzle, possibles): Return puzzle updated

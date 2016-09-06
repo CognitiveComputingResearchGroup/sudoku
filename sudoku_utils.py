@@ -34,7 +34,7 @@ def box_cells(box):
         that form a box in puzzle."""
 
     start_row, stop_row = BOX_SLICES[int(box/3)]
-    start_col, stop_col = BOX_SLICES[box%3]
+    start_col, stop_col = BOX_SLICES[box % 3]
     return set((row, col) for row in range(start_row, stop_row)
                     for col in range(start_col, stop_col))
 
