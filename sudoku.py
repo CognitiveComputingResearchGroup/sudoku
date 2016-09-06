@@ -232,9 +232,12 @@ def update_puzzle(strategy, puzzle, possibles):
     return strategy(puzzle, possibles)
     
 
-#path = '/home/stephen/PythonStuff/sudoku/2016_09_03_Sudoku_Evil.txt'
-path = '/home/stephen/PythonStuff/sudoku/2016_09_04_Sudoku_Evil.txt'
-#path = '/home/stephen/PythonStuff/sudoku/2016_09_04_Websudoku_Easy.txt'
+#path = '/home/stephen/PythonStuff/sudoku_git/2016_09_03_Sudoku_Evil.txt'
+#path = '/home/stephen/PythonStuff/sudoku_git/2016_09_04_Sudoku_Evil.txt'
+#path = '/home/stephen/PythonStuff/sudoku_git/2016_09_04_Websudoku_Easy.txt'
+#path = '/home/stephen/PythonStuff/sudoku_git/2016_09_05_Websudoku_Medium.txt'
+#path = '/home/stephen/PythonStuff/sudoku_git/2016_09_05_Websudoku_Medium_2.txt'
+path = '/home/stephen/PythonStuff/sudoku_git/2016_09_05_Websudoku_Hard.txt'
 puzzle = load_puzzle(path) 
 possibles = calculate_possibles(puzzle)
 strategies = [reduce_singletons, unique_in_col]
