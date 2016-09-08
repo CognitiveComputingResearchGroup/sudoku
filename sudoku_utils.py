@@ -107,10 +107,16 @@ def unsolved(cells, puzzle):
     """ unsolved(cells, puzzle): Returns that subset of cells
         for which the puzzle does not yet have solutions. """
 
+    #puzz = puzzle
+    #if isinstance(puzz, list):
+    if isinstance(puzzle, list):
+        #puzz = puzzle_by_cell(puzzle)
+        puzzle = puzzle_by_cell(puzzle)
+
     result = set()
     for cell in cells:
-        row, col = cell
-        if puzzle[row][col]:
+        #if puzz[cell]:
+        if puzzle[cell]:
             continue
         result.add(cell)
     return result
