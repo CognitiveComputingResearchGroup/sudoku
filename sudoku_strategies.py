@@ -1,68 +1,41 @@
 from collections import defaultdict
+from itertools import product
 import sudoku_utils as su
+
 
 def reduce_singletons(puzzle, possibles):
     """ reduce_singletons(puzzle, possibles): Return puzzle updated
         with new singletons in possibles."""
 
-    result = su.copy_puzzle(puzzle) 
-    for row_num in range(9):
-        for col_num in range(9):
-            cell_poss = possibles[row_num][col_num].copy()
-            # copy() prevents pop() below from mutating possibles
-            if len(cell_poss) is 1 and not result[row_num][col_num]:
+    result = su.copy_puzzle(puzzle)
+    for cell in product(range(9), range(9)):
+        if cell in possibles:
+            cell_poss = list(possibles[cell])
+            if len(cell_poss) is 1 and not result[cell]:
             # If singleton in a cell not already solved...
-                result[row_num][col_num] = cell_poss.pop()
+                result[cell] = cell_poss[0]
+        else:
+            result[cell] = puzzle[cell]
     return result
 
-
-def unique_in_row(puzzle, possibles):
-    """ unique_on_row(puzzle, possibles): Return puzzle updated
-        with solutions for cells with possible values unique 
-        to a row."""
+def reduce_uniques(puzzle, possibles):
+    """ reduce_uniques(puzzle, possibles): Return puzzle 
+        with values unique to rows, columns, and boxes solved."""
 
     result = su.copy_puzzle(puzzle)
-    for i in range(9):
-        cells = su.row_cells(i)
+    def _uniquify_cells(cells):
         uniques = unique_in_cells(cells, puzzle, possibles)
         if uniques:
             for cell in uniques:
-                row, col = cell
-                result[row][col] = uniques[cell]
-    return result
-
-def unique_in_col(puzzle, possibles):
-    """ unique_in_col(puzzle, possibles): Return puzzle updated
-        with solutions for cells with possible values unique
-        to a column."""
-
-    result = su.copy_puzzle(puzzle)
+                result[cell] = uniques[cell]
+    
     for i in range(9):
-        cells = su.col_cells(i)
-        uniques = unique_in_cells(cells, puzzle, possibles)
-        if uniques:
-            for cell in uniques:
-                row, col = cell
-                result[row][col] = uniques[cell]
+        cell_groups = [ su.row_cells(i), su.col_cells(i), su.box_cells(i) ]
+        for cells in cell_groups:
+            _uniquify_cells(cells)
     return result
 
-
-def unique_in_box(puzzle, possibles):
-    """ unique_in_box(puzzle, possibles): Return puzzle updated
-        with solutions for cells with possible values unique
-        to a column."""
-
-    result = su.copy_puzzle(puzzle)
-    for i in range(9):
-        cells = su.box_cells(i)
-        uniques = unique_in_cells(cells, puzzle, possibles)
-        if uniques:
-            for cell in uniques:
-                row, col = cell
-                result[row][col] = uniques[cell]
-    return result
-
-
+    
 def unique_in_cells(cells, puzzle, possibles):
     """ unique_in_cells(cells, puzzle, possibles):
         Find unique values in a group of cells.
@@ -72,47 +45,28 @@ def unique_in_cells(cells, puzzle, possibles):
 
     if len(cells) < 2:
         return dict()
-
-    cell_sets = dict()
-    def _copy_cell_sets():
-        copy = dict()
-        for cell in cell_sets:
-            copy[cell] = cell_sets[cell].copy()
-        return copy
-
-    for cell in cells:
-        # Create a dictionary subset of possibles,
-        # keyed on cell tuples
-        row, col = cell
-        # TODO: Refactor puzzle to be keyed by
-        #       cell tuple
-        if puzzle[row][col]:
-        #Ignore solved cells
-            continue
-        cell_sets[cell] = possibles[row][col].copy()
-    unique = dict()
-    for cell in cell_sets:
-        cs_copy = _copy_cell_sets()
-        cell_set = cs_copy.pop(cell)
-        for k in cs_copy:
-            cell_set = cell_set - cs_copy[k]
-            if not len(cell_set):
-                break
-        if len(cell_set):
-            unique[cell] = cell_set.pop()
-            # TODO: If cell_set is not now empty, 
-            #       throw an exception
-    return unique
+    uniques = dict()
+    counts = poss_counts_in_cells(cells, possibles)
+    if 1 in counts.values():
+        unique_digits = set([ digit for digit in counts if counts[digit] is 1 ])
+        for cell in cells:
+            if cell in possibles and possibles[cell].intersection(unique_digits):
+                unique_digit = possibles[cell].intersection(unique_digits)
+                uniques[cell] = unique_digit.pop()
+    return uniques
 
 
 def poss_counts_in_cells(cells, possibles):
     """ poss_counts_in_cells(cells, possibles):
-        Return a dictionary of """
+        Counts the number of times values occur in
+        a group of cells. Returns the results in 
+        a dictionary keyed on those values."""
 
     result = defaultdict(int)
     for cell in cells:
-        row, col = cell
-        for poss in possibles[row][col]:
+        if cell not in possibles:
+            continue
+        for poss in possibles[cell]:
             result[poss] += 1
     return result
 

@@ -19,14 +19,14 @@ def row_cells(row):
     """ row_cells(row): Return a set a tuples giving the cells
         that form a row in puzzle."""
 
-    return set((row,col) for col in range(9))
+    return list((row,col) for col in range(9))
         
 
 def col_cells(col):
     """ col_cells(col): Return a set a tuples giving the cells
         that form a column in puzzle."""
 
-    return set((row, col) for row in range(9))
+    return list((row, col) for row in range(9))
 
 
 def box_cells(box): 
@@ -35,7 +35,7 @@ def box_cells(box):
 
     start_row, stop_row = BOX_SLICES[int(box/3)]
     start_col, stop_col = BOX_SLICES[box % 3]
-    return set((row, col) for row in range(start_row, stop_row)
+    return list((row, col) for row in range(start_row, stop_row)
                     for col in range(start_col, stop_col))
 
 
@@ -43,14 +43,16 @@ def get_row_sets(puzzle):
     """ get_row_sets(puzzle): Return a list of sets indexed by row number.
         Sets contain already solved numbers in a row."""
 
-    return [set(row) - {0} for row in puzzle]
+    puzzle_rows = [ [ puzzle[cell] for cell in row_cells(row) ] for row in range(9) ]
+    return [set(puzzle_row) - {0} for puzzle_row in puzzle_rows ]
 
 
 def get_col_sets(puzzle):
     """ get_col_sets(puzzle): Return a list of sets indexed by col number.
         Sets contain already solved numbers in a column."""
 
-    return [ set([ row[i] for row in puzzle ]) - {0} for i in range(9) ]
+    puzzle_rows = [[puzzle[cell] for cell in row_cells(row)] for row in range(9)]
+    return [ set([ puzzle_row[i] for puzzle_row in puzzle_rows ]) - {0} for i in range(9) ]
 
 
 def get_box_sets(puzzle):
@@ -58,13 +60,14 @@ def get_box_sets(puzzle):
         Sets contain already solved numbers in a box."""
 
     # box_sets: dict needed for updating; convert to list afterwards
-    box_sets = dict() 
-    for row_num, row in enumerate(puzzle):
-        boxes = row_boxes(row_num)
+    box_sets = dict()
+    puzzle_rows = [[puzzle[cell] for cell in row_cells(row)] for row in range(9)]
+    for row, puzzle_row in enumerate(puzzle_rows):
+        boxes = row_boxes(row)
         for box, row_slice in zip(boxes, BOX_SLICES):
         # Iterate over the appropriate boxes and slices for this row,
         # updating sets with as needed with already solved numbers
-            update = set(row[slice(*row_slice)])
+            update = set(puzzle_row[slice(*row_slice)])
             if box in box_sets:
                 box_sets[box].update(update) 
                 # set.update(), not dict.update()
@@ -84,9 +87,9 @@ def copy_puzzle(puzzle):
     """ copy_puzzle(puzzle): Return deep copy of puzzle
         to avoid side effects in function calls."""
 
-    result = list()
-    for row in puzzle:
-        result.append(list(row))
+    result = dict()
+    for cell in puzzle:
+        result[cell] = puzzle[cell]
     return result
 
 
@@ -97,8 +100,8 @@ def different_puzzles(puzzle1, puzzle2):
 
     if len(puzzle1) is not len(puzzle2):
         return True
-    for row1, row2 in zip(puzzle1, puzzle2):
-        if any([ v1 is not v2 for v1, v2 in zip(row1, row2) ]):
+    for cell in puzzle1:
+        if puzzle1[cell] is not puzzle2[cell]:
             return True
     return False
 
@@ -107,15 +110,11 @@ def unsolved(cells, puzzle):
     """ unsolved(cells, puzzle): Returns that subset of cells
         for which the puzzle does not yet have solutions. """
 
-    #puzz = puzzle
-    #if isinstance(puzz, list):
     if isinstance(puzzle, list):
-        #puzz = puzzle_by_cell(puzzle)
         puzzle = puzzle_by_cell(puzzle)
 
     result = set()
     for cell in cells:
-        #if puzz[cell]:
         if puzzle[cell]:
             continue
         result.add(cell)
@@ -127,6 +126,8 @@ def puzzle_by_cell(puzzle):
         keyed on cell tuples, as an alternative
         representation for a puzzle."""
 
+    if isinstance(puzzle, dict):
+        return puzzle
     result = dict()
     for row, puzzle_row in enumerate(puzzle):
         for col in range(9):

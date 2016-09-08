@@ -7,6 +7,7 @@
 # Solution must have a number from 1-9 in each cell
 # and no duplicates on rows, columns, or in boxes
 
+from itertools import product
 import sudoku_utils as su
 import sudoku_strategies as strat
 
@@ -22,6 +23,7 @@ puzzle = [[ 0, 0, 2,  0, 0, 7,  0, 0, 9 ],
           [ 0, 1, 0,  0, 5, 0,  0, 4, 0 ],
           [ 8, 0, 0,  6, 0, 0,  2, 0, 0 ]]
 
+puzzle = su.puzzle_by_cell(puzzle)
    
 def load_puzzle(path):
     """ load_puzzle(path): Return puzzle from file path.
@@ -36,7 +38,7 @@ def load_puzzle(path):
         lines = f.readlines()
         for row, line in enumerate(lines):
             puzzle.append([int(s) for s in list(line.strip())])
-    return puzzle
+    return su.puzzle_by_cell(puzzle)
 
 
 def calculate_possibles(puzzle):
@@ -47,21 +49,17 @@ def calculate_possibles(puzzle):
     row_sets = su.get_row_sets(puzzle)
     col_sets = su.get_col_sets(puzzle)
     box_sets = su.get_box_sets(puzzle)
-    
+
     result = dict()
-    for row_num in range(9):
-        result[row_num] = dict()
-        for col_num in range(9):
-            cell = puzzle[row_num][col_num] 
-            if cell > 0: # If cell is solved...
-                result[row_num][col_num] = {cell}
-                continue
-            # Use set differences to determine possible solutions for cell
-            # Remove all numbers in the same row, column, and box
-            cell_poss = set(range(1, 10)) - row_sets[row_num] \
-                        - col_sets[col_num] \
-                        - box_sets[su.box_num(row_num, col_num)]
-            result[row_num][col_num] = cell_poss.copy()
+    for cell in product(range(9),range(9)):
+        cell_content = puzzle[cell] 
+        if cell_content > 0: # If cell is solved...
+            continue
+        # Use set differences to determine possible solutions for cell
+        # Remove all numbers in the same row, column, and box
+        row, col = cell
+        result[cell] = set(range(1, 10)) - row_sets[row] \
+                            - col_sets[col] - box_sets[su.box_num(row, col)]
     return result
 
 
@@ -70,16 +68,19 @@ def update_puzzle(strategy, puzzle, possibles):
     
 
 #path = '/home/stephen/PythonStuff/sudoku_git/2016_09_03_Sudoku_Evil.txt'
-path = '/home/stephen/PythonStuff/sudoku_git/2016_09_04_Sudoku_Evil.txt'
+#path = '/home/stephen/PythonStuff/sudoku_git/2016_09_04_Sudoku_Evil.txt'
 #path = '/home/stephen/PythonStuff/sudoku_git/2016_09_04_Websudoku_Easy.txt'
 #path = '/home/stephen/PythonStuff/sudoku_git/2016_09_05_Websudoku_Medium.txt'
 #path = '/home/stephen/PythonStuff/sudoku_git/2016_09_05_Websudoku_Medium_2.txt'
-#path = '/home/stephen/PythonStuff/sudoku_git/2016_09_05_Websudoku_Hard.txt'
-puzzle = load_puzzle(path) 
+path = '/home/stephen/PythonStuff/sudoku_git/2016_09_05_Websudoku_Hard.txt'
+puzzle = load_puzzle(path)
 possibles = calculate_possibles(puzzle)
-strategies = [strat.reduce_singletons, strat.unique_in_row,
-              strat.unique_in_col, strat.unique_in_box]
-previous, updated = list(), list()
+#strategies = [strat.reduce_singletons, strat.unique_in_row,
+#               strat.unique_in_col, strat.unique_in_box]
+#strategies = [strat.reduce_singletons]
+strategies = [strat.reduce_singletons, strat.reduce_uniques]
+#strategies = []
+previous, updated = dict(), dict()
 while su.different_puzzles(puzzle, previous):
     previous = su.copy_puzzle(puzzle)
     for strategy in strategies:
