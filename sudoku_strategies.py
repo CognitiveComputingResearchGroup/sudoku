@@ -12,11 +12,11 @@ def reduce_singletons(puzzle, possibles):
         if cell in possibles:
             cell_poss = list(possibles[cell])
             if len(cell_poss) is 1 and not result[cell]:
-            # If singleton in a cell not already solved...
                 result[cell] = cell_poss[0]
         else:
             result[cell] = puzzle[cell]
     return result
+
 
 def reduce_uniques(puzzle, possibles):
     """ reduce_uniques(puzzle, possibles): Return puzzle 
@@ -24,20 +24,20 @@ def reduce_uniques(puzzle, possibles):
 
     result = su.copy_puzzle(puzzle)
     def _uniquify_cells(cells):
-        uniques = unique_in_cells(cells, puzzle, possibles)
+        uniques = unique_in_cells(cells, possibles)
         if uniques:
             for cell in uniques:
                 result[cell] = uniques[cell]
     
     for i in range(9):
-        cell_groups = [ su.row_cells(i), su.col_cells(i), su.box_cells(i) ]
+        cell_groups = [ list(it) for it in (su.row_cells(i), su.col_cells(i), su.box_cells(i)) ]
         for cells in cell_groups:
             _uniquify_cells(cells)
     return result
 
     
-def unique_in_cells(cells, puzzle, possibles):
-    """ unique_in_cells(cells, puzzle, possibles):
+def unique_in_cells(cells, possibles):
+    """ unique_in_cells(cells, possibles):
         Find unique values in a group of cells.
         Cells are referenced by (row, column) tuples.
         Returns a dictionary with the unique

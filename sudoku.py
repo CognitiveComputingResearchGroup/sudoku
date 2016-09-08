@@ -11,20 +11,6 @@ from itertools import product
 import sudoku_utils as su
 import sudoku_strategies as strat
 
-puzzle = [[ 0, 0, 2,  0, 0, 7,  0, 0, 9 ],
-          [ 0, 8, 0,  0, 2, 0,  0, 5, 0 ],
-          [ 7, 0, 0,  1, 0, 0,  4, 0, 0 ],
-
-          [ 5, 0, 0,  8, 0, 0,  6, 0, 0 ],
-          [ 0, 9, 0,  0, 3, 0,  0, 1, 0 ],
-          [ 0, 0, 4,  0, 0, 6,  0, 0, 8 ],
-
-          [ 0, 0, 7,  0, 0, 4,  0, 0, 5 ],
-          [ 0, 1, 0,  0, 5, 0,  0, 4, 0 ],
-          [ 8, 0, 0,  6, 0, 0,  2, 0, 0 ]]
-
-puzzle = su.puzzle_by_cell(puzzle)
-   
 def load_puzzle(path):
     """ load_puzzle(path): Return puzzle from file path.
         path should be text, 9 lines long, with exactly nine 
@@ -33,7 +19,6 @@ def load_puzzle(path):
     # TODO: try/except, validate_puzzle() before returning
 
     puzzle = list()
-    # Encoding of returned puzzle will be as in example above
     with open(path) as f:
         lines = f.readlines()
         for row, line in enumerate(lines):
@@ -53,10 +38,8 @@ def calculate_possibles(puzzle):
     result = dict()
     for cell in product(range(9),range(9)):
         cell_content = puzzle[cell] 
-        if cell_content > 0: # If cell is solved...
+        if cell_content > 0: 
             continue
-        # Use set differences to determine possible solutions for cell
-        # Remove all numbers in the same row, column, and box
         row, col = cell
         result[cell] = set(range(1, 10)) - row_sets[row] \
                             - col_sets[col] - box_sets[su.box_num(row, col)]
@@ -75,11 +58,7 @@ def update_puzzle(strategy, puzzle, possibles):
 path = '/home/stephen/PythonStuff/sudoku_git/2016_09_05_Websudoku_Hard.txt'
 puzzle = load_puzzle(path)
 possibles = calculate_possibles(puzzle)
-#strategies = [strat.reduce_singletons, strat.unique_in_row,
-#               strat.unique_in_col, strat.unique_in_box]
-#strategies = [strat.reduce_singletons]
 strategies = [strat.reduce_singletons, strat.reduce_uniques]
-#strategies = []
 previous, updated = dict(), dict()
 while su.different_puzzles(puzzle, previous):
     previous = su.copy_puzzle(puzzle)

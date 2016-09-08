@@ -1,42 +1,33 @@
-# BOX_SLICES -- column ranges in a row that compose boxes, or
-#               (also) row ranges in a column that compose boxes
 BOX_SLICES = [ (0,3), (3,6), (6,9) ] 
-
-
 row_boxes = lambda row: [3 * int(row/3) + i for i in range(3) ]
-#   row_boxes -- returns list of box numbers spanned by a row
-#   Used with BOX_SLICES as follows:
-#   row = 0, 1, or 2 --> boxes 0, 1, and 2 for cols in BOX_SLICES
-#   row = 3, 4, or 5 --> boxes 3, 4, and 5 for cols in BOX_SLICES
-#   row = 6, 7, or 8 --> boxes 6, 7, and 8 for cols in BOX_SLICES
-
-
-# box_num(r,c): Returns the box number for a cell
 box_num = lambda r, c: row_boxes(r)[int(c/3)] 
 
 
 def row_cells(row):
-    """ row_cells(row): Return a set a tuples giving the cells
-        that form a row in puzzle."""
+    """ row_cells(row): Iterates over the cells that 
+        form a row in a sudoku puzzle."""
 
-    return list((row,col) for col in range(9))
+    for col in range(9):
+        yield (row, col)
         
 
 def col_cells(col):
-    """ col_cells(col): Return a set a tuples giving the cells
-        that form a column in puzzle."""
+    """ col_cells(col): Iterates over the cells that 
+        form a column in a sudoku puzzle."""
 
-    return list((row, col) for row in range(9))
+    for row in range(9):
+        yield (row, col)
 
 
 def box_cells(box): 
-    """ box_cells(box): Return a set a tuples giving the cells
-        that form a box in puzzle."""
+    """ box_cells(box): Iterates over the cells that 
+        form a box in sudoku puzzle."""
 
     start_row, stop_row = BOX_SLICES[int(box/3)]
     start_col, stop_col = BOX_SLICES[box % 3]
-    return list((row, col) for row in range(start_row, stop_row)
-                    for col in range(start_col, stop_col))
+    for row in range(start_row, stop_row):
+        for col in range(start_col, stop_col):
+            yield (row, col)
 
 
 def get_row_sets(puzzle):
@@ -59,18 +50,14 @@ def get_box_sets(puzzle):
     """ get_box_sets(puzzle): Return a list of sets indexed by box number.
         Sets contain already solved numbers in a box."""
 
-    # box_sets: dict needed for updating; convert to list afterwards
     box_sets = dict()
     puzzle_rows = [[puzzle[cell] for cell in row_cells(row)] for row in range(9)]
     for row, puzzle_row in enumerate(puzzle_rows):
         boxes = row_boxes(row)
         for box, row_slice in zip(boxes, BOX_SLICES):
-        # Iterate over the appropriate boxes and slices for this row,
-        # updating sets with as needed with already solved numbers
             update = set(puzzle_row[slice(*row_slice)])
             if box in box_sets:
                 box_sets[box].update(update) 
-                # set.update(), not dict.update()
             else:
                 box_sets[box] = set(update)
     
@@ -107,18 +94,13 @@ def different_puzzles(puzzle1, puzzle2):
 
 
 def unsolved(cells, puzzle):
-    """ unsolved(cells, puzzle): Returns that subset of cells
-        for which the puzzle does not yet have solutions. """
+    """ unsolved(cells, puzzle): Iterates over that subset of 
+        cells for which the puzzle does not yet have solutions. """
 
-    if isinstance(puzzle, list):
-        puzzle = puzzle_by_cell(puzzle)
-
-    result = set()
     for cell in cells:
         if puzzle[cell]:
             continue
-        result.add(cell)
-    return result
+        yield cell
 
 
 def puzzle_by_cell(puzzle):
