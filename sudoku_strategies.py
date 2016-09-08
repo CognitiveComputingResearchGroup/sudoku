@@ -1,4 +1,4 @@
-#from collections import defaultdict
+from collections import defaultdict
 import sudoku_utils as su
 
 def reduce_singletons(puzzle, possibles):
@@ -11,7 +11,7 @@ def reduce_singletons(puzzle, possibles):
             cell_poss = possibles[row_num][col_num].copy()
             # copy() prevents pop() below from mutating possibles
             if len(cell_poss) is 1 and not result[row_num][col_num]:
-            # If singleton and the cell is not already solved...
+            # If singleton in a cell not already solved...
                 result[row_num][col_num] = cell_poss.pop()
     return result
 
@@ -66,6 +66,7 @@ def unique_in_box(puzzle, possibles):
 def unique_in_cells(cells, puzzle, possibles):
     """ unique_in_cells(cells, puzzle, possibles):
         Find unique values in a group of cells.
+        Cells are referenced by (row, column) tuples.
         Returns a dictionary with the unique
         value(s), keyed on the cell(s) to be solved."""
 
@@ -80,8 +81,13 @@ def unique_in_cells(cells, puzzle, possibles):
         return copy
 
     for cell in cells:
+        # Create a dictionary subset of possibles,
+        # keyed on cell tuples
         row, col = cell
+        # TODO: Refactor puzzle to be keyed by
+        #       cell tuple
         if puzzle[row][col]:
+        #Ignore solved cells
             continue
         cell_sets[cell] = possibles[row][col].copy()
     unique = dict()
@@ -98,5 +104,16 @@ def unique_in_cells(cells, puzzle, possibles):
             #       throw an exception
     return unique
 
+
+def poss_counts_in_cells(cells, possibles):
+    """ poss_counts_in_cells(cells, possibles):
+        Return a dictionary of """
+
+    result = defaultdict(int)
+    for cell in cells:
+        row, col = cell
+        for poss in possibles[row][col]:
+            result[poss] += 1
+    return result
 
 

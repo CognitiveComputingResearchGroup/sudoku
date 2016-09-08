@@ -103,4 +103,26 @@ def different_puzzles(puzzle1, puzzle2):
     return False
 
 
+def unsolved(cells, puzzle):
+    """ unsolved(cells, puzzle): Returns that subset of cells
+        for which the puzzle does not yet have solutions. """
 
+    result = set()
+    for cell in cells:
+        row, col = cell
+        if puzzle[row][col]:
+            continue
+        result.add(cell)
+    return result
+
+
+def puzzle_by_cell(puzzle):
+    """ puzzle_by_cell(puzzle): Return a dictionary,
+        keyed on cell tuples, as an alternative
+        representation for a puzzle."""
+
+    result = dict()
+    for row, puzzle_row in enumerate(puzzle):
+        for col in range(9):
+            result[(row, col)] = puzzle_row[col]
+    return result
