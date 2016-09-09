@@ -5,7 +5,7 @@ import sudoku_utils as su
 
 def calculate_possibles(puzzle):
     """ calculate_possibles(puzzle): Return a dictionary keyed on 
-        row and column with sets containing possible solutions for 
+        cell tuples with sets containing possible solutions for 
         each cell."""
 
     row_sets = su.get_row_sets(puzzle)
@@ -19,30 +19,30 @@ def calculate_possibles(puzzle):
             continue
         row, col = cell
         result[cell] = set(range(1, 10)) - row_sets[row] \
-                            - col_sets[col] - box_sets[su.box_num(row, col)]
+                            - col_sets[col] \
+                            - box_sets[su.box_num(row, col)]
     return result
 
 
 def reduce_singletons(puzzle, possibles):
-    """ reduce_singletons(puzzle, possibles): Return puzzle updated
-        with new singletons in possibles."""
+    """ reduce_singletons(puzzle, possibles): Return puzzle updates
+        for new singletons in possibles."""
 
-    result = su.copy_puzzle(puzzle)
+    result = dict()
     for cell in product(range(9), range(9)):
         if cell in possibles:
             cell_poss = list(possibles[cell])
-            if len(cell_poss) is 1 and not result[cell]:
+            if len(cell_poss) is 1 and not puzzle[cell]:
                 result[cell] = cell_poss[0]
-        else:
-            result[cell] = puzzle[cell]
     return result
 
 
 def reduce_uniques(puzzle, possibles):
-    """ reduce_uniques(puzzle, possibles): Return puzzle 
-        with values unique to rows, columns, and boxes solved."""
+    """ reduce_uniques(puzzle, possibles): Return puzzle updates
+        for solution of cells with values unique to rows, columns, 
+        and boxes."""
 
-    result = su.copy_puzzle(puzzle)
+    result = dict()
     def _uniquify_cells(cells):
         uniques = unique_in_cells(cells, possibles)
         if uniques:
@@ -50,7 +50,9 @@ def reduce_uniques(puzzle, possibles):
                 result[cell] = uniques[cell]
     
     for i in range(9):
-        cell_groups = [ list(it) for it in (su.row_cells(i), su.col_cells(i), su.box_cells(i)) ]
+        cell_groups = [ list(it) for it in (su.row_cells(i),
+                                            su.col_cells(i),
+                                            su.box_cells(i)) ]
         for cells in cell_groups:
             _uniquify_cells(cells)
     return result
@@ -59,20 +61,21 @@ def reduce_uniques(puzzle, possibles):
 def unique_in_cells(cells, possibles):
     """ unique_in_cells(cells, possibles):
         Find unique values in a group of cells.
-        Cells are referenced by (row, column) tuples.
-        Returns a dictionary with the unique
-        value(s), keyed on the cell(s) to be solved."""
+        Returns a dictionary with the unique value(s), 
+        keyed on the cell(s) with the value(s)."""
 
     if len(cells) < 2:
         return dict()
     uniques = dict()
     counts = poss_counts_in_cells(cells, possibles)
     if 1 in counts.values():
-        unique_digits = set([ digit for digit in counts if counts[digit] is 1 ])
+        uniq_digits = set([ digit for digit in counts
+                              if counts[digit] is 1 ])
         for cell in cells:
-            if cell in possibles and possibles[cell].intersection(unique_digits):
-                unique_digit = possibles[cell].intersection(unique_digits)
-                uniques[cell] = unique_digit.pop()
+            if cell in possibles \
+                    and possibles[cell].intersection(uniq_digits):
+                uniq_digit = possibles[cell].intersection(uniq_digits)
+                uniques[cell] = uniq_digit.pop()
     return uniques
 
 
@@ -89,5 +92,3 @@ def poss_counts_in_cells(cells, possibles):
         for poss in possibles[cell]:
             result[poss] += 1
     return result
-
-

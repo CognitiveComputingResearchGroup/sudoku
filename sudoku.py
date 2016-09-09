@@ -1,4 +1,3 @@
-
 # sudoku.py
 # Steve Strain sfstrain@yahoo.com
 #
@@ -9,6 +8,7 @@
 
 import sudoku_utils as su
 import sudoku_strategies as strat
+from copy import deepcopy
 
 #path = '/home/stephen/PythonStuff/sudoku_git/2016_09_03_Sudoku_Evil.txt'
 path = '/home/stephen/PythonStuff/sudoku_git/2016_09_04_Sudoku_Evil.txt'
@@ -20,7 +20,13 @@ path = '/home/stephen/PythonStuff/sudoku_git/2016_09_04_Sudoku_Evil.txt'
 
 
 def update_puzzle(strategy, puzzle, possibles):
-    return strategy(puzzle, possibles)
+    updated = False
+    updates = strategy(puzzle, possibles)
+    if updates:
+        updated = True
+    for cell in updates:
+        puzzle[cell] = updates[cell]
+    return updated
           
         
 puzzle = su.load_puzzle(path)
@@ -29,14 +35,13 @@ strategies = [strat.reduce_singletons, strat.reduce_uniques]
 previous, updated = dict(), dict()
 su.pretty(puzzle, possibles)
 while su.different_puzzles(puzzle, previous):
-    previous = su.copy_puzzle(puzzle)
+    previous = deepcopy(puzzle)
     for strategy in strategies:
-        print
-        print '=====     ' + strategy.__name__ + '     ====='
         updated = update_puzzle(strategy, puzzle, possibles)
-        if not su.different_puzzles(puzzle, updated):
+        if not updated:
             continue
         else: 
-            puzzle = updated
             possibles = strat.calculate_possibles(puzzle)
+            print
+            print '=====     ' + strategy.__name__ + '     ====='
             su.pretty(puzzle, possibles)
