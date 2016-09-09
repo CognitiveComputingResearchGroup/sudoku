@@ -115,3 +115,66 @@ def puzzle_by_cell(puzzle):
         for col in range(9):
             result[(row, col)] = puzzle_row[col]
     return result
+
+
+def load_puzzle(path):
+    """ load_puzzle(path): Return puzzle from file path.
+        path should be text, 9 lines long, with exactly nine 
+        digits on each line, and zeros for unsolved cells."""
+
+    # TODO: try/except, validate_puzzle() before returning
+
+    puzzle = list()
+    with open(path) as f:
+        lines = f.readlines()
+        for row, line in enumerate(lines):
+            puzzle.append([int(s) for s in list(line.strip())])
+    return puzzle_by_cell(puzzle)
+
+
+def pretty(puzzle, possibles):
+
+    def pretty_puzzle(puzzle):
+        def _row_iter(row):
+            for cell in [ (row, col) for col in range(9) ]:
+                if puzzle[cell]:
+                    yield str(puzzle[cell])
+                else:
+                    yield '-'
+        result = []
+        fmt = '| {} {} {} | {} {} {} | {} {} {} |'
+        divider = '========' * 3 + '='
+        for row in range(9):
+            if not row % 3:
+                result.append(divider)
+            result.append(fmt.format(*tuple(_row_iter(row))))
+        result.append(divider)
+        return result
+    
+    def pretty_possibles(possibles):
+        def _row_iter(row):
+            for cl in [ (row, col) for col in range(9) ]:
+                if cl in possibles:
+                    yield ''.join(str(d) for d in sorted(possibles[cl]))
+                else:
+                    yield '---'
+        result = []
+        cell_fmt = '{:^6}|'
+        box_fmt = 3 * cell_fmt + '|'
+        fmt = '||' + 3 * box_fmt 
+        divider = '=======' * 9 + '====='
+        for row in range(9):
+            if not row % 3:
+                result.append(divider)
+            cells = []
+            for idx, s in enumerate(_row_iter(row)):
+                cells.append(s)
+            result.append(fmt.format(*tuple(cells)))
+        result.append('=======' * 9)
+        return result
+    
+    for line in pretty_puzzle(puzzle):
+        print line
+    for line in pretty_possibles(possibles):
+        print line
+

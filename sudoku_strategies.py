@@ -3,6 +3,26 @@ from itertools import product
 import sudoku_utils as su
 
 
+def calculate_possibles(puzzle):
+    """ calculate_possibles(puzzle): Return a dictionary keyed on 
+        row and column with sets containing possible solutions for 
+        each cell."""
+
+    row_sets = su.get_row_sets(puzzle)
+    col_sets = su.get_col_sets(puzzle)
+    box_sets = su.get_box_sets(puzzle)
+
+    result = dict()
+    for cell in product(range(9),range(9)):
+        cell_content = puzzle[cell] 
+        if cell_content > 0: 
+            continue
+        row, col = cell
+        result[cell] = set(range(1, 10)) - row_sets[row] \
+                            - col_sets[col] - box_sets[su.box_num(row, col)]
+    return result
+
+
 def reduce_singletons(puzzle, possibles):
     """ reduce_singletons(puzzle, possibles): Return puzzle updated
         with new singletons in possibles."""
